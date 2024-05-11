@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "devsu-test": {
+    "devtest-test": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/devsu-test",
+            "outputPath": "dist/devtest-test",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -67,10 +67,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "devsu-test:build:production"
+              "browserTarget": "devtest-test:build:production"
             },
             "development": {
-              "browserTarget": "devsu-test:build:development"
+              "browserTarget": "devtest-test:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -78,7 +78,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "devsu-test:build"
+            "browserTarget": "devtest-test:build"
           }
         },
         "test": {
