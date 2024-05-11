@@ -1,0 +1,53 @@
+<div class="container">
+  <div class="options">
+    <input
+      class="options__serach-input"
+      type="text"
+      placeholder="Buscar..."
+      [(ngModel)]="searchTerm"
+    />
+    <app-button text="Agregar" routerLink="/product/add" [type]="typeButton.PRIMARY"></app-button>
+  </div>
+  <ng-container>
+    <app-table
+      [_totalData]="_totalData"
+      [searchTerm]="searchTerm"
+      [isLoadingTable]="isLoadingTable"
+      (emitterItemSelected)="itemSelected = $event"
+      (editProduct)="editProduct($event)"
+      (deleteProduct)="selectItemToBeDeleted($event)"
+    ></app-table>
+  </ng-container>
+</div>
+
+<ng-template #confirmDelete>
+  <div class="confirm-delete">
+    <h1 class="confirm-delete__title">
+      ¿Estas seguro de eliminar el producto {{ itemSelected?.name }}?
+    </h1>
+
+    <div class="actions">
+      <app-button
+        text="Cancelar"
+        widthButton="220px"
+        [type]="typeButton.SECONDARY"
+        (actionClick)="showModalConfirm = false"
+      ></app-button>
+      <app-button
+        text="Eliminar"
+        widthButton="220px"
+        [type]="typeButton.PRIMARY"
+        (actionClick)="deleteProduct()"
+      ></app-button>
+    </div></div
+></ng-template>
+
+<app-modal
+  [showModal]="showModalConfirm"
+  [template]="confirmDelete"
+  [isCloseable]="false"
+  [removeBackground]="true"
+  [size]="sizeModal.MEDIUM"
+  (clickClose)="showModalConfirm = false"
+>
+</app-modal>
