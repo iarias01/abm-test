@@ -1,4 +1,4 @@
-<div class="data-table" *ngIf="!isLoadingTable; else skeleton">
+<div class="data-table" *ngIf="!isLoadingTable; else skeleton" style="width: 100%">
   <table class="table">
     <thead>
       <tr>
@@ -6,16 +6,15 @@
         <th>Nombre del producto</th>
         <th>Descripción <i class="fa-solid fa-circle-info"></i></th>
         <th>Fecha de liberación <i class="fa-solid fa-circle-info"></i></th>
-        <th>Fecha de reestructuración <i class="fa-solid fa-circle-info"></i></th>
+        <th>
+          Fecha de reestructuración
+          <i class="fa-solid fa-circle-info"></i>
+        </th>
         <th class="center-data"></th>
       </tr>
     </thead>
     <tbody>
-      <tr
-        *ngFor="let item of showData; trackBy: trackById"
-        [attr.id]="item.id"
-        (click)="itemSelected = item; showModalDescription = true"
-      >
+      <tr *ngFor="let item of showData; trackBy: trackById" [attr.id]="item.id">
         <td class="center-data">
           <img class="icon-data" [src]="item.logo" alt="logo" />
         </td>
@@ -38,7 +37,7 @@
         <td>{{ item.date_release | date: 'dd/MM/yyyy' }}</td>
         <td>{{ item.date_revision | date: 'dd/MM/yyyy' }}</td>
         <td
-          class="center-data"
+          class="center-data action-row"
           tabindex="0"
           (click)="$event.stopPropagation(); toggleDropdown(item.id)"
           (blur)="closeDropdown(item.id)"
@@ -51,11 +50,25 @@
                 'mobile-open': dropdownStates[item.id]
               }"
             >
-              <button class="dropdown-content__btn" (mousedown)="editProduct.emit(item)">
+              <button
+                class="dropdown-content__btn"
+                (mousedown)="editProduct.emit(item); closeDropdown(item.id)"
+              >
                 <i class="fa-solid fa-pen-to-square"></i> Modificar
               </button>
-              <button class="dropdown-content__btn" (mousedown)="deleteProduct.emit(item)">
+              <button
+                class="dropdown-content__btn"
+                (mousedown)="deleteProduct.emit(item); closeDropdown(item.id)"
+              >
                 <i class="fa-solid fa-trash"></i> Eliminar
+              </button>
+              <button
+                class="dropdown-content__btn"
+                (mousedown)="
+                  itemSelected = item; showModalDescription = true; closeDropdown(item.id)
+                "
+              >
+                <i class="fa-solid fa-eye"></i> Visualizar
               </button>
             </div>
           </div>
@@ -63,6 +76,7 @@
       </tr>
     </tbody>
   </table>
+  <ng-container *ngIf="totalRecords !== 0; else emptyList"></ng-container>
   <div class="table-footer">
     <section class="left-section">
       <label for="quantity">{{ totalRecords }} Resultados</label>
@@ -107,16 +121,26 @@
   [showModal]="showModalDescription"
   [template]="description"
   [isCloseable]="true"
-  [size]="sizeModal.MEDIUM"
+  [size]="sizeModal.SMALL"
   (clickClose)="showModalDescription = false"
 >
 </app-modal>
+
+<ng-template #emptyList>
+  <p class="empty-products" *ngIf="totalRecords === 0 && searchTerm === ''">
+    No contiene elemntos en la lista. Por favor agregue nuevos productos
+  </p>
+  <p class="empty-products" *ngIf="searchTerm !== ''">
+    No se encuentraron productos con "<b>{{ searchTerm }}</b
+    >"
+  </p>
+</ng-template>
 
 <ng-template #description>
   <div class="description-modal">
     <h1 class="description-modal__title">
       <img class="icon-data" [src]="itemSelected?.logo ?? ''" alt="logo" />
-      {{ itemSelected?.name ?? '' }} - id: {{ itemSelected?.id ?? '' }}
+      {{ itemSelected?.name ?? '' }}
     </h1>
     <div class="description-modal__text">{{ itemSelected?.description ?? '' }}</div>
     <div class="description-date">

@@ -1,7 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TableComponent } from './table.component';
 import { IDataRecord } from '../../utils/records.interface';
-import { ESizeModal } from '../../utils/modal-size.enum';
+import { ModalModule } from '../modal/modal.module';
+import { FormsModule } from '@angular/forms';
+import { TableSkeletonModule } from '../table-skeleton/table-skeleton.module';
+import { MOCK_RECORDS } from '../../utils/mocks';
 
 describe('TableComponent', () => {
   let component: TableComponent;
@@ -10,6 +13,7 @@ describe('TableComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TableComponent],
+      imports: [ModalModule, FormsModule, TableSkeletonModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableComponent);
@@ -71,6 +75,8 @@ describe('TableComponent', () => {
 
   it('should change page', () => {
     component.totalPages = 5;
+    component.currentPage = 1;
+    component.totalData = MOCK_RECORDS;
     component.changePage(3);
     expect(component.currentPage).toBe(3);
   });
@@ -96,7 +102,7 @@ describe('TableComponent', () => {
       },
     ];
     component.searchTerm = searchTerm;
-    component._totalData = totalData;
+    component.totalData = totalData;
     component.totalRecords = 2;
     component.currentPage = 2;
     component.totalPages = 1;

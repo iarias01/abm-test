@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
@@ -6,16 +6,24 @@ import { Router } from '@angular/router';
   templateUrl: './not-found.component.html',
   styleUrls: ['./not-found.component.scss'],
 })
-export class NotFoundComponent {
+export class NotFoundComponent implements OnInit, OnDestroy {
   secondsLeft = 5;
-  constructor(private router: Router) {
+  private countdownInterval: any;
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
     this.updateCountdown();
   }
 
-  private updateCountdown(): void {
-    setInterval(() => {
+  ngOnDestroy(): void {
+    clearInterval(this.countdownInterval);
+  }
+
+  updateCountdown(): void {
+    this.countdownInterval = setInterval(() => {
       if (this.secondsLeft === 0) {
-        this.router.navigate(['/home']);
+        this.router.navigateByUrl('/home');
         return;
       }
       this.secondsLeft--;

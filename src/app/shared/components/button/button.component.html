@@ -1,8 +1,10 @@
 <button
-  class="devtest-button"
+  class="devsu-button"
   [ngClass]="{
-    'devtest-button--primary': typeButton.PRIMARY === type,
-    'devtest-button--secondary': typeButton.SECONDARY === type
+    'devsu-button--small': sizeButton.SMALL === size,
+    'devsu-button--primary': typeButton.PRIMARY === type,
+    'devsu-button--secondary': typeButton.SECONDARY === type,
+    'devsu-button--black': typeButton.BLACK === type
   }"
   [ngStyle]="{ width: widthButton }"
   [disabled]="disabled"

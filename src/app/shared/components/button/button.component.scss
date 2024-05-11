@@ -1,6 +1,6 @@
 @import '../../../../styles.scss';
 
-.devtest-button {
+.devsu-button {
   background-color: $color-white;
   font-weight: bold;
   font-size: 16px;
@@ -16,6 +16,11 @@
   &--secondary {
     background-color: $color-blue;
   }
+  &--black {
+    background-color: $color-black-secondary;
+    color: $color-white;
+    font-weight: 500;
+  }
   &:disabled {
     filter: opacity(0.5);
     cursor: not-allowed;
@@ -23,12 +28,22 @@
   &--full-block {
     width: 100%;
   }
+  &--small {
+    font-size: 14px;
+    padding: 7px 15px;
+    height: 35px;
+  }
 }
 
 @media screen and (max-width: $breackpoint-cel) {
-  .devtest-button {
+  .devsu-button {
     font-size: 12px;
     height: 40px;
     padding: 10px 20px;
+    &--small {
+      font-size: 12px;
+      padding: 5px 10px;
+      height: 30px;
+    }
   }
 }

@@ -6,7 +6,7 @@ import { EAlertType } from 'src/app/shared/utils/alert-type.enum';
 import { ETypesButton } from 'src/app/shared/utils/type-button.enum';
 import { ESizeModal } from 'src/app/shared/utils/modal-size.enum';
 import { Router } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { of, switchMap, take } from 'rxjs';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 
 @Component({
@@ -19,15 +19,17 @@ export class HomeComponent implements OnInit {
   public searchTerm = '';
   public itemSelected: IDataRecord | null = null;
   public showModalConfirm = false;
+  public showActionsTester = false;
   public showModalDescription = false;
   public sizeModal = ESizeModal;
   public isLoadingTable = false;
-  public _totalData: IDataRecord[] = [];
+  public totalProducts = 0;
+  public totalData: IDataRecord[] = [];
 
   constructor(
     private productsService: ProductsService,
     private alertService: AlertService,
-    private router: Router,
+    public router: Router,
     private loadingService: LoadingService,
   ) {}
 
@@ -36,35 +38,67 @@ export class HomeComponent implements OnInit {
      * If the ID is empty or has few products, uncomment this line to load products
      */
     //this.productsService.pushRandomProducts();
+    this.isLoadingTable = true;
     this.loadProducts();
   }
 
-  private loadProducts() {
-    this.isLoadingTable = true;
-    this.productsService.getProducts().subscribe({
-      next: (data) => {
-        this._totalData = data;
+  debuggerActions(clear = false) {
+    this.loadingService.loading$.next(true);
+    clear && this.totalData.length > 0
+      ? this.productsService.removeAllProducts(this.totalData)
+      : this.productsService.pushRandomProducts();
 
-        /**
-         * If you want to clear the list for some reason, uncomment the following line
-         */
-        //this.productsService.removeAllProducts(data);
-      },
-      error: (error) => {
-        this.alertService.message$.next({
-          description: 'Ocurrió un error al cargar los productos',
-          type: EAlertType.ERROR,
-        });
-        console.error('Error', error);
-      },
-      complete: () => {
-        /**
-         * A timer is set so that the skeleton for the exercise can be appreciated
-         */
-        setTimeout(() => {
+    setTimeout(() => {
+      this.loadingService.loading$.next(false);
+      this.loadProducts();
+    }, 3000);
+  }
+
+  loadProducts() {
+    this.productsService
+      .getProducts()
+      .pipe(take(1))
+      .subscribe({
+        next: (data) => {
+          data = this.sortData(data);
+          this.totalData = data;
           this.isLoadingTable = false;
-        }, 2000);
-      },
+
+          /**
+           * If you want to clear the list for some reason, uncomment the following line
+           */
+          //this.productsService.removeAllProducts(data);
+        },
+        error: (error) => {
+          this.alertService.message$.next({
+            description: 'Ocurrió un error al cargar los productos',
+            type: EAlertType.ERROR,
+          });
+          console.error('Error', error);
+        },
+        complete: () => {
+          /**
+           * A timer is set so that the skeleton for the exercise can be appreciated
+           */
+          setTimeout(() => {
+            this.isLoadingTable = false;
+          }, 2000);
+        },
+      });
+  }
+
+  sortData(data: IDataRecord[]) {
+    return data.sort((a, b) => {
+      const nameA = a.name.toUpperCase();
+      const nameB = b.name.toUpperCase();
+
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
     });
   }
 
@@ -80,9 +114,10 @@ export class HomeComponent implements OnInit {
       this.productsService
         .verifyID(item.id)
         .pipe(
+          take(1),
           switchMap((exist) => {
             if (exist) {
-              return this.productsService.deleteProduct(item.id);
+              return this.productsService.deleteProduct(item.id).pipe(take(1));
             }
             this.alertService.message$.next({
               description: `El producto ${item.name} no existe`,

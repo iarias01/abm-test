@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -7,27 +7,28 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of, switchMap, take } from 'rxjs';
+import { Subscription, of, switchMap, take } from 'rxjs';
 import { AlertService } from 'src/app/services/alert/alert.service';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 import { ProductsService } from 'src/app/services/products/products.service';
 import { EAlertType } from 'src/app/shared/utils/alert-type.enum';
 import { IDataRecord } from 'src/app/shared/utils/records.interface';
-import { ETypesButton } from 'src/app/shared/utils/type-button.enum';
+import { ESizeButton, ETypesButton } from 'src/app/shared/utils/type-button.enum';
 
 @Component({
   selector: 'app-product',
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.scss'],
 })
-export class ProductComponent implements OnInit {
+export class ProductComponent implements OnInit, OnDestroy {
   public productForm!: FormGroup;
   public isEditMode = false;
   public submitted = false;
   public typeButton = ETypesButton;
+  public sizeButton = ESizeButton;
 
-  private _productData: IDataRecord | null = null;
-
+  _productData: IDataRecord | null = null;
+  subscription = new Subscription();
   constructor(
     private productsService: ProductsService,
     private formBuilder: FormBuilder,
@@ -35,6 +36,10 @@ export class ProductComponent implements OnInit {
     private alertService: AlertService,
     private loadingService: LoadingService,
   ) {}
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 
   ngOnInit() {
     this.loadingService.loading$.next(true);
@@ -44,7 +49,15 @@ export class ProductComponent implements OnInit {
 
   initializeForm() {
     this.productForm = this.formBuilder.group({
-      id: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(10)]],
+      id: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(10),
+          Validators.pattern(/^[^\s]+$/),
+        ],
+      ],
       name: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
       logo: ['', Validators.required, this.validateURLImage],
@@ -55,7 +68,7 @@ export class ProductComponent implements OnInit {
     const dateReleaseControl = this.productForm.get('date_release');
     const dateRevisionControl = this.productForm.get('date_revision');
     if (dateReleaseControl && dateRevisionControl) {
-      dateReleaseControl.valueChanges.subscribe((value) => {
+      this.subscription = dateReleaseControl.valueChanges.subscribe((value) => {
         if (value) {
           const releaseDate = new Date(value);
           const revisionDate = new Date(releaseDate);
@@ -110,6 +123,14 @@ export class ProductComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.isEditMode && this.productForm.get('id')?.value !== this._productData?.id) {
+      this.alertService.message$.next({
+        description: `No se permite editar el ID de un producto existente`,
+        type: EAlertType.INFO,
+      });
+      this.productForm.get('id')?.setValue(this._productData?.id);
+      return;
+    }
     this.submitted = true;
     if (this.productForm.invalid) {
       return;
@@ -134,9 +155,10 @@ export class ProductComponent implements OnInit {
     this.productsService
       .verifyID(data.id)
       .pipe(
+        take(1),
         switchMap((exist) => {
           if (exist) {
-            return this.productsService.updateProduct(data);
+            return this.productsService.updateProduct(data).pipe(take(1));
           }
           this.alertService.message$.next({
             description: `El producto ${data.name} no existe`,
@@ -170,12 +192,13 @@ export class ProductComponent implements OnInit {
     this.productsService
       .verifyID(data.id)
       .pipe(
+        take(1),
         switchMap((exist) => {
           if (!exist) {
-            return this.productsService.addProduct(data);
+            return this.productsService.addProduct(data).pipe(take(1));
           }
           this.alertService.message$.next({
-            description: `El producto ${data.name} ya existe`,
+            description: `El producto "${data.name}" ya existe con el ID "${data.id}"`,
             type: EAlertType.WARNING,
           });
           return of();
