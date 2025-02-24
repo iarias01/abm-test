@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductComponent } from './product.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { AlertService } from 'src/app/services/alert/alert.service';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 import { ProductsService } from 'src/app/services/products/products.service';
 import { BehaviorSubject, of } from 'rxjs';
@@ -11,12 +10,12 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'src/app/shared/components/button/button.module';
 import { MOCK_RECORDS } from 'src/app/shared/utils/mocks';
 import { EAlertType } from 'src/app/shared/utils/alert-type.enum';
+import { message$ } from 'src/app/shared/components/alert/alert.component';
 
 describe('ProductComponent', () => {
   let component: ProductComponent;
   let fixture: ComponentFixture<ProductComponent>;
   let loadingService: LoadingService;
-  let alertService: AlertService;
 
   beforeEach(async () => {
     const editableProductSubject = new BehaviorSubject<IDataRecord | null>(null);
@@ -35,7 +34,6 @@ describe('ProductComponent', () => {
       declarations: [ProductComponent],
       imports: [HttpClientTestingModule, ReactiveFormsModule, ButtonModule],
       providers: [
-        AlertService,
         LoadingService,
         FormBuilder,
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'edit' } } } },
@@ -46,7 +44,6 @@ describe('ProductComponent', () => {
     fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
     loadingService = TestBed.inject(LoadingService);
-    alertService = TestBed.inject(AlertService);
     fixture.detectChanges();
   });
 
@@ -119,7 +116,7 @@ describe('ProductComponent', () => {
   });
 
   it('should show alert when trying to edit existing product ID', () => {
-    const alertServiceSpy = spyOn(alertService.message$, 'next');
+    const alertServiceSpy = spyOn(message$, 'next');
 
     component.isEditMode = true;
     component._productData = MOCK_RECORDS[0];

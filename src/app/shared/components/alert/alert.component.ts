@@ -1,8 +1,12 @@
 import { Component, Input, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { AlertService } from 'src/app/services/alert/alert.service';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { IAlert } from '../../utils/alert.interface';
 import { EAlertType } from '../../utils/alert-type.enum';
+
+export const message$ = new BehaviorSubject<IAlert>({
+  description: '',
+  type: EAlertType.DEFAULT,
+});
 
 @Component({
   selector: 'app-alert',
@@ -15,8 +19,8 @@ export class AlertComponent implements OnDestroy {
   subscribe$ = new Subscription();
   enumTypes = EAlertType;
 
-  constructor(private alertService: AlertService) {
-    this.subscribe$ = this.alertService.message$.subscribe((data) => {
+  constructor() {
+    this.subscribe$ = message$.subscribe((data) => {
       this.message = data;
       if (data.description !== '') {
         this.showAlert = true;

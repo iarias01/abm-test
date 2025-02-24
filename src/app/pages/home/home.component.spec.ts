@@ -3,7 +3,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HomeComponent } from './home.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ProductsService } from 'src/app/services/products/products.service';
-import { AlertService } from '../../services/alert/alert.service';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 import { ETypesButton } from 'src/app/shared/utils/type-button.enum';
 import { ESizeModal } from 'src/app/shared/utils/modal-size.enum';
@@ -17,11 +16,11 @@ import { MOCK_RECORDS } from 'src/app/shared/utils/mocks';
 import { of, throwError } from 'rxjs';
 import { EAlertType } from 'src/app/shared/utils/alert-type.enum';
 import { Router } from '@angular/router';
+import { message$ } from 'src/app/shared/components/alert/alert.component';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let alertService: AlertService;
   let loadingService: LoadingService;
   let productsService: ProductsService;
   let router: Router;
@@ -38,11 +37,10 @@ describe('HomeComponent', () => {
         FormsModule,
         ButtonModule,
       ],
-      providers: [ProductsService, AlertService, LoadingService],
+      providers: [ProductsService, LoadingService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HomeComponent);
-    alertService = TestBed.inject(AlertService);
     loadingService = TestBed.inject(LoadingService);
     productsService = TestBed.inject(ProductsService);
     router = TestBed.inject(Router);
@@ -83,7 +81,7 @@ describe('HomeComponent', () => {
     };
     spyOn(productsService, 'verifyID').and.returnValue(of(true));
     spyOn(productsService, 'deleteProduct').and.returnValue(of(''));
-    const alertServiceSpy = spyOn(alertService.message$, 'next');
+    const alertServiceSpy = spyOn(message$, 'next');
 
     component.itemSelected = item;
     component.deleteProduct();
@@ -126,7 +124,7 @@ describe('HomeComponent', () => {
     spyOn(productsService, 'verifyID').and.returnValue(of(true));
     spyOn(productsService, 'deleteProduct').and.returnValue(throwError('Error'));
     spyOn(console, 'error');
-    const alertServiceSpy = spyOn(alertService.message$, 'next');
+    const alertServiceSpy = spyOn(message$, 'next');
     const loadingServiceSpy = spyOn(loadingService.loading$, 'next');
 
     component.itemSelected = item;
@@ -146,7 +144,7 @@ describe('HomeComponent', () => {
     const mockProducts = MOCK_RECORDS.slice(0, 2);
     spyOn(productsService, 'getProducts').and.returnValue(of(mockProducts));
     spyOn(productsService, 'removeAllProducts').and.stub();
-    spyOn(alertService.message$, 'next').and.stub();
+    spyOn(message$, 'next').and.stub();
     component.loadProducts();
     expect(productsService.getProducts).toHaveBeenCalled();
     tick(3000);
@@ -156,11 +154,11 @@ describe('HomeComponent', () => {
   it('should handle error when loading products', fakeAsync(() => {
     const mockError = new Error('Failed to load products');
     spyOn(productsService, 'getProducts').and.returnValue(throwError(mockError));
-    spyOn(alertService.message$, 'next').and.stub();
+    spyOn(message$, 'next').and.stub();
     component.loadProducts();
     expect(productsService.getProducts).toHaveBeenCalled();
     tick(3000);
-    expect(alertService.message$.next).toHaveBeenCalledWith({
+    expect(message$.next).toHaveBeenCalledWith({
       description: 'Ocurrió un error al cargar los productos',
       type: EAlertType.ERROR,
     });

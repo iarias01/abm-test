@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ProductsService } from 'src/app/services/products/products.service';
 import { IDataRecord } from 'src/app/shared/utils/records.interface';
-import { AlertService } from '../../services/alert/alert.service';
 import { EAlertType } from 'src/app/shared/utils/alert-type.enum';
 import { ETypesButton } from 'src/app/shared/utils/type-button.enum';
 import { ESizeModal } from 'src/app/shared/utils/modal-size.enum';
 import { Router } from '@angular/router';
 import { of, switchMap, take } from 'rxjs';
 import { LoadingService } from 'src/app/services/loading/loading.service';
+import { message$ } from 'src/app/shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-home',
@@ -28,7 +28,6 @@ export class HomeComponent implements OnInit {
 
   constructor(
     private productsService: ProductsService,
-    private alertService: AlertService,
     public router: Router,
     private loadingService: LoadingService,
   ) {}
@@ -70,7 +69,7 @@ export class HomeComponent implements OnInit {
           //this.productsService.removeAllProducts(data);
         },
         error: (error) => {
-          this.alertService.message$.next({
+          message$.next({
             description: 'Ocurrió un error al cargar los productos',
             type: EAlertType.ERROR,
           });
@@ -119,7 +118,7 @@ export class HomeComponent implements OnInit {
             if (exist) {
               return this.productsService.deleteProduct(item.id).pipe(take(1));
             }
-            this.alertService.message$.next({
+            message$.next({
               description: `El producto ${item.name} no existe`,
               type: EAlertType.WARNING,
             });
@@ -128,7 +127,7 @@ export class HomeComponent implements OnInit {
         )
         .subscribe({
           next: () => {
-            this.alertService.message$.next({
+            message$.next({
               description: `Producto ${item.name} eliminado`,
               type: EAlertType.SUCCESS,
             });
@@ -138,7 +137,7 @@ export class HomeComponent implements OnInit {
           error: (error) => {
             this.showModalConfirm = false;
             this.loadingService.loading$.next(false);
-            this.alertService.message$.next({
+            message$.next({
               description: `Ocurrió un error al eliminar el producto: ${item.name}`,
               type: EAlertType.ERROR,
             });

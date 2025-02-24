@@ -8,9 +8,9 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription, of, switchMap, take } from 'rxjs';
-import { AlertService } from 'src/app/services/alert/alert.service';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 import { ProductsService } from 'src/app/services/products/products.service';
+import { message$ } from 'src/app/shared/components/alert/alert.component';
 import { EAlertType } from 'src/app/shared/utils/alert-type.enum';
 import { IDataRecord } from 'src/app/shared/utils/records.interface';
 import { ESizeButton, ETypesButton } from 'src/app/shared/utils/type-button.enum';
@@ -33,7 +33,6 @@ export class ProductComponent implements OnInit, OnDestroy {
     private productsService: ProductsService,
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
-    private alertService: AlertService,
     private loadingService: LoadingService,
   ) {}
 
@@ -124,7 +123,7 @@ export class ProductComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     if (this.isEditMode && this.productForm.get('id')?.value !== this._productData?.id) {
-      this.alertService.message$.next({
+      message$.next({
         description: `No se permite editar el ID de un producto existente`,
         type: EAlertType.INFO,
       });
@@ -145,7 +144,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       this.addProcut(this._productData);
       return;
     }
-    this.alertService.message$.next({
+    message$.next({
       description: `Ocurrió un error inesperado`,
       type: EAlertType.ERROR,
     });
@@ -160,7 +159,7 @@ export class ProductComponent implements OnInit, OnDestroy {
           if (exist) {
             return this.productsService.updateProduct(data).pipe(take(1));
           }
-          this.alertService.message$.next({
+          message$.next({
             description: `El producto ${data.name} no existe`,
             type: EAlertType.WARNING,
           });
@@ -169,14 +168,14 @@ export class ProductComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.alertService.message$.next({
+          message$.next({
             description: `Producto ${data.name} fue actualizado`,
             type: EAlertType.SUCCESS,
           });
         },
         error: (error) => {
           this.loadingService.loading$.next(false);
-          this.alertService.message$.next({
+          message$.next({
             description: `Ocurrió un error al actualizar el producto ${data.name}`,
             type: EAlertType.ERROR,
           });
@@ -197,7 +196,7 @@ export class ProductComponent implements OnInit, OnDestroy {
           if (!exist) {
             return this.productsService.addProduct(data).pipe(take(1));
           }
-          this.alertService.message$.next({
+          message$.next({
             description: `El producto "${data.name}" ya existe con el ID "${data.id}"`,
             type: EAlertType.WARNING,
           });
@@ -206,7 +205,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.alertService.message$.next({
+          message$.next({
             description: `Producto ${data.name} fue agregado`,
             type: EAlertType.SUCCESS,
           });
@@ -214,7 +213,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.loadingService.loading$.next(false);
-          this.alertService.message$.next({
+          message$.next({
             description: `Ocurrió un error al agregar el producto ${data.name}`,
             type: EAlertType.ERROR,
           });
